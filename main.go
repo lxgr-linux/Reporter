@@ -20,10 +20,10 @@ func (t Time) GetVals() []interface{} {
 	return []interface{}{t.Start, t.End, t.Time}
 }
 
-func getTimesFromCSV() (timeArr []Time) {
+func getTimesFromCSV() (timeArr []Time, err error) {
 	reportFile, err := os.Open("report.csv")
 	if err != nil {
-		log.Fatal(err)
+		return timeArr, err
 	}
 	defer reportFile.Close()
 
@@ -34,7 +34,7 @@ func getTimesFromCSV() (timeArr []Time) {
 			break
 		}
 		if err != nil {
-			log.Fatal(err)
+			return timeArr, err
 		}
 
 		var times []float64
@@ -42,9 +42,15 @@ func getTimesFromCSV() (timeArr []Time) {
 		for idx, time := range rec {
 			rec[idx] = strings.TrimSpace(time)
 			var sTimes = strings.Split(rec[idx], ":")
-			hours, _ := strconv.ParseFloat(sTimes[0], 4)
-			minutes, _ := strconv.ParseFloat(sTimes[1], 4)
-			times = append(times, (hours)+(minutes/60))
+			hours, err := strconv.ParseFloat(sTimes[0], 4)
+			if err != nil {
+				return timeArr, err
+			}
+			minutes, err := strconv.ParseFloat(sTimes[1], 4)
+			if err != nil {
+				return timeArr, err
+			}
+			times = append(times, hours+minutes/60)
 		}
 		var addTime = 0
 		if times[0] > times[1] {
@@ -81,7 +87,10 @@ func getFooter(timeArr []Time) string {
 }
 
 func main() {
-	timeArr := getTimesFromCSV()
+	timeArr, err := getTimesFromCSV()
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println(timeArr)
 	md := convertToMD(timeArr)
 	header := getHeader()
