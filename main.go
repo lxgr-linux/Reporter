@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -38,6 +39,10 @@ func getTimesFromCSV() (timeArr []Time, err error) {
 		}
 
 		var times []float64
+
+		if len(rec) != 2 {
+			return timeArr, errors.New("Wrong line length")
+		}
 
 		for idx, time := range rec {
 			rec[idx] = strings.TrimSpace(time)
@@ -91,7 +96,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(timeArr)
 	md := convertToMD(timeArr)
 	header := getHeader()
 	footer := getFooter(timeArr)
